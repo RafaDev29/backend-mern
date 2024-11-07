@@ -3,23 +3,35 @@ import { pool } from '../../config/db.js'
 
 
 const getTasks = async (req, res) => {
-    const [result] = await pool.query("select* from tasks")
-    res.json(result)
+    try {
+
+        const [result] = await pool.query("select* from tasks")
+        res.json(result)
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+
 }
 
 const createTasks = async (req, res) => {
-    const { title, description } = req.body
-    const [result] = await pool.query(
-        "INSERT INTO tasks(title, description) VALUES (?,?)",
-        [title, description]
-    )
-    res.json({
-        id: result.insertId,
-        title,
-        description
 
+    try {
+        const { title, description } = req.body
+        const [result] = await pool.query(
+            "INSERT INTO tasks(title, description) VALUES (?,?)",
+            [title, description]
+        )
+        res.json({
+            id: result.insertId,
+            title,
+            description
+
+        }
+        )
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
     }
-    )
+
 }
 
 
@@ -35,43 +47,61 @@ const updateTasks = async (req, res) => {
         result
     })
 }
-const updateTasks1 = async (req, res) => {
-    const { title, description } = req.body
-    const {id} = req.params
-    const [result] = await pool.query("UPDATE tasks SET ? WHERE id= ?", [req.body, req.params.id])
-    if (result.affectedRows===0 ){
-        return res.status(404).json({message: "task no found"})
-    }
-    res.json({
-        id,
-        title,
-        description
 
+
+const updateTasks1 = async (req, res) => {
+    try {
+        const { title, description } = req.body
+        const { id } = req.params
+        const [result] = await pool.query("UPDATE tasks SET ? WHERE id= ?", [req.body, req.params.id])
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: "task no found" })
+        }
+        res.json({
+            id,
+            title,
+            description
+
+        }
+        )
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
     }
-    )
+
 }
 
 
 
 const getIdTasks = async (req, res) => {
-    const [result] = await pool.query("select * from tasks where id = ? ", [req.params.id])
-    if (result.length == 0) {
 
-        return res.status(404).json({ message: "task no found" })
+    try {
+        const [result] = await pool.query("select * from tasks where id = ? ", [req.params.id])
+        if (result.length == 0) {
+
+            return res.status(404).json({ message: "task no found" })
+        }
+
+        res.json(result[0])
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
     }
 
-    res.json(result[0])
 }
 
 
 const deleteTasks = async (req, res) => {
-    const [result] = await pool.query("delete from tasks where id= ?", [req.params.id])
-    if (result.affectedRows === 0) {
+    try {
+        const [result] = await pool.query("delete from tasks where id= ?", [req.params.id])
+        if (result.affectedRows === 0) {
 
-        return res.status(404).json({ message: "task no found" })
+            return res.status(404).json({ message: "task no found" })
+        }
+
+        return res.sendStatus(204)
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
     }
 
-    return res.sendStatus(204)
 
 }
 
